@@ -1,0 +1,40 @@
+<template>
+    <div>
+        <b-modal id="new_motion_program_from_trajectory_dialog" title="Create Optimized Motion Program From Trajectory"
+            @ok="handle_next" @hidden="handle_hidden" hide-header-close scrollable modal-class="modal-fullscreen">
+            <div style="height: calc(100vh - 10rem)">
+            <b-form-group label="Trajectory File Upload (CSV)" label-for="trajectory-file-upload">
+                <b-form-file id="trajectory-file-upload"
+                v-model="trajectory_file" :state="Boolean(trajectory_file)"
+                placeholder="Choose trajectory file or drop it here..."
+                drop-placeholder="Drop file here..."
+                accept=".csv"></b-form-file>
+                <b-button @click="trajectory_file_upload" class="mr-2" id="trajectory-file-upload-button">Upload Trajectory</b-button>
+            </b-form-group>
+
+            <b-form-group label="Trajectory Data" label-for="robot_mp_trajectory_sheet">
+            <div id="robot_mp_trajectory_sheet" style="width:100%;height:400px"></div>
+            <b-button @click="trajectory_data_clear" class="mr-2" id="trajectory-data-clear-button">Clear Trajectory Data</b-button>
+            </b-form-group>
+
+            <b-form-group label="Trajectory Data Format">
+                <b-form-select id="trajectory-file-format" v-model="trajectory_file_format_selected" :options="trajectory_file_format_options"></b-form-select>
+            </b-form-group>
+
+            <b-form-group label="Trajectory Data Frame">
+                <b-form-select id="trajectory-data-frame" v-model="trajectory_data_frame_selected" :options="trajectory_data_frame_options"></b-form-select>
+            </b-form-group>
+
+            <b-form-group label="Robot" label-for="robot-select">
+                <b-form-select id="robot-select" v-model="robot_selected" :options="robot_select_options">
+                </b-form-select>
+            </b-form-group>
+
+            <b-form-group label="Robot Calibration" label-for="robot-calibration">
+                <b-form-select id="robot-calibration" v-model="robot_calibration_selected" :options="robot_calibration_options"></b-form-select>
+            </b-form-group>
+        </div>
+
+        </b-modal>
+    </div>
+</template>
