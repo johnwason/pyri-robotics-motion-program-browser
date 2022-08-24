@@ -33,6 +33,71 @@
             <b-form-group label="Robot Calibration" label-for="robot-calibration">
                 <b-form-select id="robot-calibration" v-model="robot_calibration_selected" :options="robot_calibration_options"></b-form-select>
             </b-form-group>
+
+            <b-form-group
+                label="Flange To Tool TCP (meter,degree)"
+            >
+                <b-form-group
+                label="x"
+                label-for="tool_pose_x"
+                >
+                    <b-form-input
+                        id="tool_pose_x"
+                        v-model="tool_pose_x"
+                    >
+                    </b-form-input>
+                </b-form-group>
+                <b-form-group
+                label="y"
+                label-for="tool_pose_y"
+                >
+                    <b-form-input
+                        id="tool_pose_y"
+                        v-model="tool_pose_y"
+                    >
+                    </b-form-input>
+                </b-form-group>
+                <b-form-group
+                label="z"
+                label-for="tool_pose_z"
+                >
+                    <b-form-input
+                        id="tool_pose_z"
+                        v-model="tool_pose_z"
+                    >
+                    </b-form-input>
+                </b-form-group>
+                <b-form-group
+                label="R"
+                label-for="tool_pose_r_r"
+                >
+                    <b-form-input
+                        id="tool_pose_r_r"
+                        v-model="tool_pose_r_r"
+                    >
+                    </b-form-input>
+                </b-form-group>
+                <b-form-group
+                label="P"
+                label-for="tool_pose_r_p"
+                >
+                    <b-form-input
+                        id="tool_pose_r_p"
+                        v-model="tool_pose_r_p"
+                    >
+                    </b-form-input>
+                </b-form-group>
+                <b-form-group
+                label="Y"
+                label-for="tool_pose_r_y"
+                >
+                    <b-form-input
+                        id="tool_pose_r_y"
+                        v-model="tool_pose_r_y"
+                    >
+                    </b-form-input>
+                </b-form-group>
+            </b-form-group>
         </div>
 
         </b-modal>
