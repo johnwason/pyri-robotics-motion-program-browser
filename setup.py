@@ -11,7 +11,7 @@ setup(
     packages=find_namespace_packages(where='src'),
     include_package_data=True,
     package_data = {
-        #'pyri.robotics_browser.panels': ['*.html'],
+        'pyri.robotics_motion_program_browser.panels': ['*.html'],
         'pyri.robotics_motion_program_browser.dialogs': ['*.html']
     },
     zip_safe=False,
@@ -20,7 +20,7 @@ setup(
         'importlib-resources',        
     ],
     entry_points = {
-        #'pyri.plugins.webui_browser_panel': ['pyri-robotics-browser=pyri.robotics_browser.panels.robotics_panels:get_webui_browser_panel_factory'],
+        'pyri.plugins.webui_browser_panel': ['pyri-robotics-motion-program-browser=pyri.robotics_motion_program_browser.panels.robotics_mp_panels:get_webui_browser_panel_factory'],
         'pyri.plugins.webui_browser_variable_dialog': ['pyri-robotics-motion-program-browser=pyri.robotics_motion_program_browser.dialogs.robotics_mp_variable_dialogs:get_webui_browser_variable_dialog_factory']
     }
 )
