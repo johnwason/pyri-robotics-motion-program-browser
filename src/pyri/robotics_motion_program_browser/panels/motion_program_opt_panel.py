@@ -11,6 +11,8 @@ import js
 from RobotRaconteur.Client import *
 import traceback
 from pyodide import create_once_callable, create_proxy
+import numpy as np
+import io
 
 
 async def add_motion_program_opt_panel(panel_type: str, core: PyriWebUIBrowser, parent_element: Any):
@@ -53,21 +55,14 @@ async def add_motion_program_opt_panel(panel_type: str, core: PyriWebUIBrowser, 
         },
         "data": {
             "op_selected": "redundancy_resolution",
-            "redundancy_resolution_input_data_source": "<none>",
-            "mp_opt_redundancy_resolution_input_data_file": None
+            "redundancy_resolution_curve_js_output_variable": ""
         },
         "methods": {
-            "load_from_variable": mp_opt_panel.load_from_variable,
-            "load_from_csv": mp_opt_panel.load_from_csv,
-            "load_from_csv2": mp_opt_panel.load_from_csv2,
-            "clear_table": mp_opt_panel.clear_table,
         }
     }))
 
 
     mp_opt_panel.init_vue(mp_opt_panel_vue)
-
-    await mp_opt_panel.init_sheets()
 
 class MotionOptPanel:
     def __init__(self, core, device_manager):
@@ -78,67 +73,6 @@ class MotionOptPanel:
 
     def init_vue(self,vue):
         self.vue = vue
-
-    async def init_sheets(self):
-        await js.Vue.nextTick()
-
-        self.create_sheet("redundancy_resolution_input_data", "mp_opt_redundancy_resolution_input_data")
-
-    def create_sheet(self, key, element_id):
-        sheet = js.document.getElementById(element_id)
-        assert sheet is not None
-        xspr_options = to_js2({
-            "view": {
-                "height": lambda: sheet.clientHeight,
-                "width": lambda: sheet.clientWidth
-            }
-        })
-
-        self.xsprs[key] = js.x_spreadsheet(sheet,xspr_options)
-
-    def load_from_variable(self, sheet_key, *args):
-        js.alert(f"load_from_variable: {sheet_key}")
-
-    def load_from_csv(self, sheet_key, *args):
-        getattr(self.vue,"$bvModal").show(f"mp_opt_{sheet_key}_file_modal")
-
-    def load_from_csv2(self, sheet_key, *args):
-        try:
-            self.core.create_task(self.do_load_from_csv(sheet_key))
-        except:
-            js.alert(f"Error displaying motion program opt results:\n\n{traceback.format_exc()}")
-
-    async def do_load_from_csv(self, sheet_key):
-        try:
-            
-            file_input_file = getattr(getattr(self.vue, "$data"), f"mp_opt_{sheet_key}_file")
-            
-            file_future = asyncio.Future()
-
-            def file_done(res):
-                file_bytes = js.Uint8Array.new(res.target.result)
-                file_future.set_result(file_bytes)
-
-            def file_err(res):
-                file_future.set_exception(res.to_py())
-
-            file_reader = js.FileReader.new()
-            file_reader.onload=file_done
-            file_reader.onerror=file_err
-
-            file_reader.readAsArrayBuffer(file_input_file)
-
-            file_bytes = await file_future
-
-            wb = js.XLSX.read(file_bytes, to_js2({'type': 'array'}))
-            data = js.stox(wb)
-            data[0].rows.len=len(data[0].rows.object_keys())
-            self.xsprs[sheet_key].loadData(data)
-        except:
-            js.alert(f"Error displaying motion program opt results:\n\n{traceback.format_exc()}")
-
-    def clear_table(self, elem_id, *args):
-        js.alert(f"clear_table: {elem_id}")
        
 
 def vue_obj_method(fn_name):
@@ -158,7 +92,7 @@ def load_input_data_component(core):
 
     mp_input_data_component = js.Vue.extend(to_js2({
         "template": mp_input_data_component_html,
-        "props": ["name", "title", "sub_title", "data_file"],
+        "props": ["name", "title", "subtitle", "data_file"],
         "data": lambda js_this: to_js2({
             "obj": None
         }),
@@ -166,7 +100,8 @@ def load_input_data_component(core):
             "load_from_variable": vue_obj_method("load_from_variable"),
             "load_from_csv": vue_obj_method("load_from_csv"),
             "load_from_csv2": vue_obj_method("load_from_csv2"),
-            "clear_table": vue_obj_method("clear_table")
+            "clear_table": vue_obj_method("clear_table"),
+            "get_sheet_data": vue_obj_method("get_sheet_data")
         },
         "mounted": js.wrap_js_this(create_once_callable(mp_input_data_component_mounted))
 
@@ -240,3 +175,11 @@ class InputDataComponent:
 
     def clear_table(self, elem_id, *args):
         self.xspr.loadData({})
+
+    def get_sheet_data(self):
+        # TODO: more efficient way to get data from xspr into numpy
+        new_wb = js.xtos(self.xspr.getData())
+        csv_dat = js.XLSX.utils.sheet_to_csv(getattr(new_wb.Sheets,new_wb.SheetNames[0]))
+        csv_dat_io = io.StringIO(csv_dat)
+        np_dat = np.genfromtxt(csv_dat_io, dtype=np.float64, delimiter=",")
+        return np_dat
