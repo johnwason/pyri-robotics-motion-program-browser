@@ -34,8 +34,14 @@ class="mt-2">
 <div v-show="redundancy_resolution_running"><div class="spinner-border" role="status">
     <span class="sr-only">Running...</span>
 </div> &nbsp; &nbsp; <span class="display-6">Running...</span> &nbsp;&nbsp; <b-button variant="danger" @click="abort"><i class="fa fa-stop"></i> Abort</b-button></div>
-<div v-show="redundancy_resolution_done">
+<div v-show="redundancy_resolution_done"></div>
 </b-card>
+
+<h3>Log</h3>
+<div style="height:400px">
+<motion-program-opt-panel-log-component ref="redundancy_resolution_log"></motion-program-opt-panel-log-component>
+</div>
+
 <div v-show="redundancy_resolution_results_show">
     <div v-show="redundancy_resolution_results_plots_show">
         <h3>Results Plots</h3>

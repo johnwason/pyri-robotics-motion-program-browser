@@ -50,7 +50,8 @@ async def add_motion_program_opt_panel(panel_type: str, core: PyriWebUIBrowser, 
 class MotionOptPanel(PyriVue):
     def __init__(self, core, el):
         super().__init__(core, el, components={
-            "motion-program-opt-panel-input-data-component": InputDataComponent
+            "motion-program-opt-panel-input-data-component": InputDataComponent,
+            "motion-program-opt-panel-log-component": LogComponent
         })
         self.xsprs = dict()
 
@@ -137,3 +138,17 @@ class InputDataComponent(PyriVue):
         csv_dat_io = io.StringIO(csv_dat)
         np_dat = np.genfromtxt(csv_dat_io, dtype=np.float64, delimiter=",")
         return np_dat
+
+@VueComponent
+class LogComponent(PyriVue):
+
+    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_log_component.html")
+
+    log_lines = vue_data([])
+
+    def append_log_line(self, log_line: str):
+        print(f"append_log_line {log_line}")
+        # Use JS lines directly
+        log_lines_js = self.log_lines
+        log_lines_js.push(log_line)
+        self.log_lines = log_lines_js
