@@ -13,6 +13,7 @@ import traceback
 from pyodide import create_once_callable, create_proxy
 import numpy as np
 import io
+from pyri.webui_browser.pyri_vue import PyriVue, VueComponent, vue_method, vue_data, vue_prop, vue_computed
 
 
 async def add_motion_program_opt_panel(panel_type: str, core: PyriWebUIBrowser, parent_element: Any):
@@ -44,79 +45,34 @@ async def add_motion_program_opt_panel(panel_type: str, core: PyriWebUIBrowser, 
 
     core.layout.layout.root.getItemsById("program")[0].addChild(to_js2(mp_panel_config))
     
-    mp_input_data_component = load_input_data_component(core)
+    mp_opt_panel = MotionOptPanel(core, "#motion_program_opt")
 
-    mp_opt_panel = MotionOptPanel(core, core.device_manager)
-
-    mp_opt_panel_vue = js.Vue.new(to_js2({
-        "el": "#motion_program_opt",
-        "components": {
-            "motion-program-opt-panel-input-data-component": mp_input_data_component
-        },
-        "data": {
-            "op_selected": "redundancy_resolution",
-            "redundancy_resolution_curve_js_output_variable": ""
-        },
-        "methods": {
-        }
-    }))
-
-
-    mp_opt_panel.init_vue(mp_opt_panel_vue)
-
-class MotionOptPanel:
-    def __init__(self, core, device_manager):
-        self.vue = None
-        self.core = core
-        self.device_manager = device_manager
+class MotionOptPanel(PyriVue):
+    def __init__(self, core, el):
+        super().__init__(core, el, components={
+            "motion-program-opt-panel-input-data-component": InputDataComponent
+        })
         self.xsprs = dict()
 
-    def init_vue(self,vue):
-        self.vue = vue
+    op_selected = vue_data("redundancy_resolution")
+    
+    redundancy_resolution_curve_js_output_variable = vue_data("")
        
 
-def vue_obj_method(fn_name):
-    def fn(js_this,*args):
-        obj = getattr(js_this,"$data").obj
-        py_fn = getattr(obj,fn_name)
-        py_fn(args)
-    return js.wrap_js_this(create_proxy(fn))
-
-def load_input_data_component(core):
-
-    def mp_input_data_component_mounted(js_this):
-
-        obj = InputDataComponent(js_this, core)
-
-    mp_input_data_component_html = importlib_resources.read_text(__package__,"motion_program_opt_panel_input_data_component.html")
-
-    mp_input_data_component = js.Vue.extend(to_js2({
-        "template": mp_input_data_component_html,
-        "props": ["name", "title", "subtitle", "data_file"],
-        "data": lambda js_this: to_js2({
-            "obj": None
-        }),
-        "methods": {
-            "load_from_variable": vue_obj_method("load_from_variable"),
-            "load_from_csv": vue_obj_method("load_from_csv"),
-            "load_from_csv2": vue_obj_method("load_from_csv2"),
-            "clear_table": vue_obj_method("clear_table"),
-            "get_sheet_data": vue_obj_method("get_sheet_data")
-        },
-        "mounted": js.wrap_js_this(create_once_callable(mp_input_data_component_mounted))
-
-    })
-    )
-
-    return mp_input_data_component
-
-class InputDataComponent:
-    def __init__(self,vue,core):
-        self.vue = vue
-        self.core = core
-        getattr(vue,"$data").obj = self
+@VueComponent
+class InputDataComponent(PyriVue):
+    def __init__(self):
+        super().__init__()        
         self.xspr = None
-        self.name = getattr(vue,"$props").name
+
+    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_input_data_component.html")
+
+    name = vue_prop()
+    title = vue_prop()
+    subtitle = vue_prop()
+    data_file = vue_data()
+
+    def mounted(self):
         self.init_sheet()
 
     def init_sheet(self):
@@ -132,22 +88,19 @@ class InputDataComponent:
 
         self.xspr = js.x_spreadsheet(sheet,xspr_options)
 
+    @vue_method
     def load_from_variable(self, *args):
         js.alert("load_from_variable")
 
+    @vue_method
     def load_from_csv(self, *args):
-        getattr(self.vue,"$bvModal").show(f"mp_opt_{self.name}_file_modal")
+        self.bvModal.show(f"mp_opt_{self.name}_file_modal")
 
-    def load_from_csv2(self, *args):
-        try:
-            self.core.create_task(self.do_load_from_csv())
-        except:
-            js.alert(f"Error displaying motion program opt results:\n\n{traceback.format_exc()}")
-
-    async def do_load_from_csv(self):
+    @vue_method
+    async def load_from_csv2(self, *args):
         try:
             
-            file_input_file = getattr(getattr(self.vue, "$props"), f"data_file")
+            file_input_file = self.data_file
             
             file_future = asyncio.Future()
 
@@ -173,6 +126,7 @@ class InputDataComponent:
         except:
             js.alert(f"Error displaying motion program opt results:\n\n{traceback.format_exc()}")
 
+    @vue_method
     def clear_table(self, elem_id, *args):
         self.xspr.loadData({})
 
