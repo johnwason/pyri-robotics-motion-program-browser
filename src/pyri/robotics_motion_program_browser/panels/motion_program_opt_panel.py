@@ -47,18 +47,7 @@ async def add_motion_program_opt_panel(panel_type: str, core: PyriWebUIBrowser, 
     
     mp_opt_panel = MotionOptPanel(core, "#motion_program_opt")
 
-class MotionOptPanel(PyriVue):
-    def __init__(self, core, el):
-        super().__init__(core, el, components={
-            "motion-program-opt-panel-input-data-component": InputDataComponent,
-            "motion-program-opt-panel-log-component": LogComponent
-        })
-        self.xsprs = dict()
 
-    op_selected = vue_data("redundancy_resolution")
-    
-    redundancy_resolution_curve_js_output_variable = vue_data("")
-       
 
 @VueComponent
 class InputDataComponent(PyriVue):
@@ -152,3 +141,105 @@ class LogComponent(PyriVue):
         log_lines_js = self.log_lines
         log_lines_js.push(log_line)
         self.log_lines = log_lines_js
+
+    def append_log_lines(self, log_lines: List[str]):
+        if len(log_lines) == 0:
+            return
+        print(f"append_log_lines {log_lines}")
+        # Use JS lines directly
+        log_lines_js = self.log_lines
+        for l in log_lines:
+            log_lines_js.push(l)
+        self.log_lines = log_lines_js
+
+    def clear_log(self):
+        self.log_lines = to_js2([])
+
+@VueComponent
+class ExecutionComponent(PyriVue):
+
+    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_execution_component.html")
+
+    state = vue_prop()
+
+@VueComponent
+class RedundancyResolutionComponent(PyriVue):
+    
+    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_redundancy_resolution_component.html")
+
+    vue_components = {
+                        "motion-program-opt-panel-input-data-component": InputDataComponent,
+                        "motion-program-opt-panel-log-component": LogComponent,
+                        "motion-program-opt-panel-execution-component": ExecutionComponent
+    }
+
+    execution_state = vue_data("idle")
+
+    def __init__(self):
+        self.mp_opt_gen = None
+
+    @vue_method
+    def run(self):
+        
+        self.execution_state = "running"
+        self.core.create_task(self.do_alg())
+    
+    @vue_method
+    def abort(self):
+        self.execution_state = "done"
+        if self.mp_opt_gen is not None:
+            try:
+                self.mp_opt_gen.Abort()
+            except:
+                pass
+
+    @vue_method
+    def reset(self):
+        self.execution_state = "idle"
+        self.log.clear_log()
+
+    @property
+    def log(self):
+        return self.get_ref_pyobj("redundancy_resolution_log")
+
+    async def do_alg(self):
+        try:
+
+            curve_js = self.get_ref_pyobj("redundancy_resolution_curve_file").get_sheet_data()
+            input_parameters = {
+                "curve_js": RR.VarValue(curve_js, "double[*]")
+            }
+
+            mp_opt_service = self.core.device_manager.get_device_subscription("robotics_mp_opt").GetDefaultClient()
+            self.mp_opt_gen = await mp_opt_service.async_motion_program_opt("redundancy_resolution", input_parameters, None)
+           
+            while True:
+                try:
+                    res = await self.mp_opt_gen.AsyncNext(None,None)
+                    if res.log_output:
+                        self.log.append_log_lines(res.log_output)
+                except RR.StopIterationException:
+                    break
+        
+            self.log.append_log_line("Done!")
+                
+        except:
+            js.alert(f"Motion program optimization failed:\n\n{traceback.format_exc()}")
+        finally:
+            self.execution_state = "done"
+            self.mp_opt_gen = None
+
+
+class MotionOptPanel(PyriVue):
+    def __init__(self, core, el):
+        super().__init__(core, el)
+        
+    vue_components={
+        "motion-program-opt-panel-redundancy-resolution-component": RedundancyResolutionComponent
+    }
+
+    op_selected = vue_data("redundancy_resolution")
+    
+    redundancy_resolution_curve_js_output_variable = vue_data("")
+
+

@@ -1,0 +1,34 @@
+<div>
+<h2>Redundancy Resolution</h2>
+<h3>Input Data</h3>
+<motion-program-opt-panel-input-data-component ref="redundancy_resolution_curve_file"
+    name="redundancy_resolution_curve_file" 
+    title="Curve File" subtitle="Curve data table in x,y,z,i,j,k format">
+
+</motion-program-opt-panel-input-data-component>
+
+<h3>Input Parameters</h3>
+<b-card title="Output Variables" sub-title="Output global variable names to store results" border-variant="dark" 
+style="padding: 0.25rem;"
+class="mt-2">
+<b-form-group label="Curve JS Result" label-cols-md="3">
+    <b-form-input v-model="redundancy_resolution_curve_js_output_variable"></b-form-input>
+</b-form-group>
+</b-card>
+<h3>Execution</h3>
+<motion-program-opt-panel-execution-component
+@run="run()" @abort="abort()" @reset="reset()" :state="execution_state">
+</motion-program-opt-panel-execution-component>
+
+<h3>Log</h3>
+<div style="height:400px">
+<motion-program-opt-panel-log-component ref="redundancy_resolution_log"></motion-program-opt-panel-log-component>
+</div>
+
+<div v-show="redundancy_resolution_results_show">
+    <div v-show="redundancy_resolution_results_plots_show">
+        <h3>Results Plots</h3>
+        <div id="redundancy_resolution_results_plots_container"></div>
+    </div>
+</div>
+</div>

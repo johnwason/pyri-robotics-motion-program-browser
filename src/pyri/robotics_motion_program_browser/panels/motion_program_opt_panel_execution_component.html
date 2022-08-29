@@ -1,0 +1,11 @@
+<b-card :title="title" border-variant="dark" style="padding: 0.25rem;" class="mt-2">
+    <div v-show="state === 'idle' || state === '' || state === null">
+        <b-button @click="$emit('run')">Run Algorithm</b-button></div>
+    <div v-show="state === 'running'">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Running...</span>
+        </div> &nbsp; &nbsp; <span class="display-6">Running...</span> &nbsp;&nbsp; <b-button variant="danger"
+            @click="$emit('abort')"><i class="fa fa-stop"></i> Abort</b-button>
+    </div>
+    <div v-show="state === 'done'"><b-button @click="$emit('reset')">Reset Results</b-button></div>
+</b-card>
