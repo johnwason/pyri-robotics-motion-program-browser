@@ -14,6 +14,7 @@ from pyodide import create_once_callable, create_proxy
 import numpy as np
 import io
 from pyri.webui_browser.pyri_vue import PyriVue, VueComponent, vue_method, vue_data, vue_prop, vue_computed
+import base64
 
 
 async def add_motion_program_opt_panel(panel_type: str, core: PyriWebUIBrowser, parent_element: Any):
@@ -63,6 +64,7 @@ class InputDataComponent(PyriVue):
     data_file = vue_data()
 
     def mounted(self):
+        super().mounted()
         self.init_sheet()
 
     def init_sheet(self):
@@ -79,8 +81,28 @@ class InputDataComponent(PyriVue):
         self.xspr = js.x_spreadsheet(sheet,xspr_options)
 
     @vue_method
-    def load_from_variable(self, *args):
-        js.alert("load_from_variable")
+    async def load_from_variable(self, *args):
+        try:
+            variable_name = js.prompt("Variable Name")
+            if variable_name is None:
+                return
+
+            var_storage = self.core.device_manager.get_device_subscription("variable_storage").GetDefaultClient()
+            variable_rr = await var_storage.async_getf_variable_value("globals", variable_name, None)
+
+            assert variable_rr.datatype == "double[*]", "Variable must be a 2D array"
+            variable_csv_io = io.StringIO()
+            np.savetxt(variable_csv_io, variable_rr.data, delimiter=",")
+            variable_csv_b = variable_csv_io.getvalue().encode("ascii")
+            print(f"variable_csv_b: {variable_csv_b}")
+
+            wb = js.XLSX.read(to_js2(variable_csv_b), to_js2({'type': 'array'}))
+            data = js.stox(wb)
+            print(f"data[0].rows.object_keys() {data[0].rows.object_keys()}")
+            data[0].rows.len=len(data[0].rows.object_keys())
+            self.xspr.loadData(data)
+        except:
+            js.alert(f"Error loading data from variable:\n\n{traceback.format_exc()}")
 
     @vue_method
     def load_from_csv(self, *args):
@@ -136,7 +158,6 @@ class LogComponent(PyriVue):
     log_lines = vue_data([])
 
     def append_log_line(self, log_line: str):
-        print(f"append_log_line {log_line}")
         # Use JS lines directly
         log_lines_js = self.log_lines
         log_lines_js.push(log_line)
@@ -145,7 +166,6 @@ class LogComponent(PyriVue):
     def append_log_lines(self, log_lines: List[str]):
         if len(log_lines) == 0:
             return
-        print(f"append_log_lines {log_lines}")
         # Use JS lines directly
         log_lines_js = self.log_lines
         for l in log_lines:
@@ -175,6 +195,14 @@ class RedundancyResolutionComponent(PyriVue):
 
     execution_state = vue_data("idle")
 
+    curve_global_name = vue_data("")
+    curve_js_global_name = vue_data("")
+    curve_base_global_name = vue_data("")
+    curve_pose_global_name = vue_data("")
+    plots_global_name = vue_data("")
+
+    plots = vue_data([])
+
     def __init__(self):
         self.mp_opt_gen = None
 
@@ -185,18 +213,16 @@ class RedundancyResolutionComponent(PyriVue):
         self.core.create_task(self.do_alg())
     
     @vue_method
-    def abort(self):
+    async def abort(self):
         self.execution_state = "done"
-        if self.mp_opt_gen is not None:
-            try:
-                self.mp_opt_gen.Abort()
-            except:
-                pass
+        if self.mp_opt_gen is not None:            
+            await self.mp_opt_gen.AsyncAbort(None)            
 
     @vue_method
     def reset(self):
         self.execution_state = "idle"
         self.log.clear_log()
+        self.plots = to_js2([])
 
     @property
     def log(self):
@@ -205,9 +231,14 @@ class RedundancyResolutionComponent(PyriVue):
     async def do_alg(self):
         try:
 
-            curve_js = self.get_ref_pyobj("redundancy_resolution_curve_file").get_sheet_data()
+            curve = self.get_ref_pyobj("redundancy_resolution_curve_file").get_sheet_data()
             input_parameters = {
-                "curve_js": RR.VarValue(curve_js, "double[*]")
+                "curve": RR.VarValue(curve, "double[*]"),
+                "curve_global_name": RR.VarValue(self.curve_global_name, "string"),
+                "curve_js_global_name": RR.VarValue(self.curve_js_global_name, "string"),
+                "curve_base_global_name": RR.VarValue(self.curve_base_global_name, "string"),
+                "curve_pose_global_name": RR.VarValue(self.curve_pose_global_name, "string"),
+                "plots_global_name": RR.VarValue(self.plots_global_name, "string")
             }
 
             mp_opt_service = self.core.device_manager.get_device_subscription("robotics_mp_opt").GetDefaultClient()
@@ -218,6 +249,18 @@ class RedundancyResolutionComponent(PyriVue):
                     res = await self.mp_opt_gen.AsyncNext(None,None)
                     if res.log_output:
                         self.log.append_log_lines(res.log_output)
+                    
+                    if res.plots:
+                        try:
+                            for plot_name,plot in res.plots.items():
+                                self.plots.push(to_js2({
+                                    "plot_name": plot_name,
+                                    "plot_data_url": svg_to_data_url(plot)
+                                }))
+
+                        except:
+                            js.alert(f"Error generating plots:\n\n{traceback.format_exc()}")
+
                 except RR.StopIterationException:
                     break
         
@@ -243,3 +286,7 @@ class MotionOptPanel(PyriVue):
     redundancy_resolution_curve_js_output_variable = vue_data("")
 
 
+def svg_to_data_url(svg_np):
+    svg_b64 = base64.b64encode(bytearray(svg_np)).decode("ascii")
+
+    return f"data:image/svg+xml;base64,{svg_b64}"
