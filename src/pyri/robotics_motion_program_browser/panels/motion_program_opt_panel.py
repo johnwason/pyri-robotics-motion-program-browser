@@ -13,7 +13,7 @@ import traceback
 from pyodide import create_once_callable, create_proxy
 import numpy as np
 import io
-from pyri.webui_browser.pyri_vue import PyriVue, VueComponent, vue_method, vue_data, vue_prop, vue_computed
+from pyri.webui_browser.pyri_vue import PyriVue, VueComponent, vue_method, vue_data, vue_prop, vue_computed, vue_watch
 import base64
 
 
@@ -182,11 +182,8 @@ class ExecutionComponent(PyriVue):
 
     state = vue_prop()
 
-@VueComponent
-class RedundancyResolutionComponent(PyriVue):
+class MotionOptPanelPage(PyriVue):
     
-    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_redundancy_resolution_component.html")
-
     vue_components = {
                         "motion-program-opt-panel-input-data-component": InputDataComponent,
                         "motion-program-opt-panel-log-component": LogComponent,
@@ -194,12 +191,6 @@ class RedundancyResolutionComponent(PyriVue):
     }
 
     execution_state = vue_data("idle")
-
-    curve_global_name = vue_data("")
-    curve_js_global_name = vue_data("")
-    curve_base_global_name = vue_data("")
-    curve_pose_global_name = vue_data("")
-    plots_global_name = vue_data("")
 
     plots = vue_data([])
 
@@ -229,20 +220,13 @@ class RedundancyResolutionComponent(PyriVue):
         return self.get_ref_pyobj("redundancy_resolution_log")
 
     async def do_alg(self):
+        raise NotImplementedError()
+
+    async def _do_alg_base(self, algorithm, input_parameters):
         try:
 
-            curve = self.get_ref_pyobj("redundancy_resolution_curve_file").get_sheet_data()
-            input_parameters = {
-                "curve": RR.VarValue(curve, "double[*]"),
-                "curve_global_name": RR.VarValue(self.curve_global_name, "string"),
-                "curve_js_global_name": RR.VarValue(self.curve_js_global_name, "string"),
-                "curve_base_global_name": RR.VarValue(self.curve_base_global_name, "string"),
-                "curve_pose_global_name": RR.VarValue(self.curve_pose_global_name, "string"),
-                "plots_global_name": RR.VarValue(self.plots_global_name, "string")
-            }
-
             mp_opt_service = self.core.device_manager.get_device_subscription("robotics_mp_opt").GetDefaultClient()
-            self.mp_opt_gen = await mp_opt_service.async_motion_program_opt("redundancy_resolution", input_parameters, None)
+            self.mp_opt_gen = await mp_opt_service.async_motion_program_opt(algorithm, input_parameters, None)
            
             while True:
                 try:
@@ -273,17 +257,97 @@ class RedundancyResolutionComponent(PyriVue):
             self.mp_opt_gen = None
 
 
+@VueComponent
+class RedundancyResolutionComponent(MotionOptPanelPage):
+    
+    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_redundancy_resolution_component.html")
+
+    curve_global_name = vue_data("")
+    curve_js_global_name = vue_data("")
+    curve_base_global_name = vue_data("")
+    curve_pose_global_name = vue_data("")
+    plots_global_name = vue_data("")
+
+    def __init__(self):
+        super().__init__()
+
+    async def do_alg(self):
+        try:
+
+            curve = self.get_ref_pyobj("redundancy_resolution_curve_file").get_sheet_data()
+            input_parameters = {
+                "curve": RR.VarValue(curve, "double[*]"),
+                "curve_global_name": RR.VarValue(self.curve_global_name, "string"),
+                "curve_js_global_name": RR.VarValue(self.curve_js_global_name, "string"),
+                "curve_base_global_name": RR.VarValue(self.curve_base_global_name, "string"),
+                "curve_pose_global_name": RR.VarValue(self.curve_pose_global_name, "string"),
+                "plots_global_name": RR.VarValue(self.plots_global_name, "string")            
+            }
+
+                
+        except:
+            js.alert(f"Motion program parameter error:\n\n{traceback.format_exc()}")        
+            self.execution_state = "done"
+            self.mp_opt_gen = None
+            return
+
+        await self._do_alg_base("redundancy_resolution", input_parameters)
+
+@VueComponent
+class MotionProgramGenerationComponent(MotionOptPanelPage):
+    
+    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_motion_program_generation_component.html")
+
+    total_seg = vue_data(100)
+    velocity = vue_data(1)
+    blend_radius = vue_data(0.05)
+    motion_program_global_name = vue_data("")
+    motion_program_parameters_global_name = vue_data("")
+
+    def __init__(self):
+        super().__init__()
+
+    async def do_alg(self):
+        try:
+
+            curve_js = self.get_ref_pyobj("motion_program_generation_curve_js_file").get_sheet_data()
+            print(f"total_seg: {self.total_seg}")
+            input_parameters = {
+                "curve_js": RR.VarValue(curve_js, "double[*]"),
+                "total_seg": RR.VarValue(int(self.total_seg), "uint32"),
+                "velocity": RR.VarValue(float(self.velocity), "double"),
+                "blend_radius": RR.VarValue(float(self.blend_radius), "double"),
+                "motion_program_global_name": RR.VarValue(self.motion_program_global_name, "string"),
+                "motion_program_parameters_global_name": RR.VarValue(self.motion_program_parameters_global_name, "string"),                            
+            }
+
+                
+        except:
+            js.alert(f"Motion program parameter error:\n\n{traceback.format_exc()}")
+            return
+        finally:
+            self.execution_state = "done"
+            self.mp_opt_gen = None
+
+        await self._do_alg_base("motion_program_generation", input_parameters)
+
 class MotionOptPanel(PyriVue):
     def __init__(self, core, el):
         super().__init__(core, el)
         
     vue_components={
-        "motion-program-opt-panel-redundancy-resolution-component": RedundancyResolutionComponent
+        "motion-program-opt-panel-redundancy-resolution-component": RedundancyResolutionComponent,
+        "motion-program-opt-panel-motion-program-generation-component": MotionProgramGenerationComponent
     }
 
     op_selected = vue_data("redundancy_resolution")
     
     redundancy_resolution_curve_js_output_variable = vue_data("")
+
+    @vue_watch("op_selected")
+    async def op_selected_watch(*args):
+        await asyncio.sleep(0.01)
+        js.window.dispatchEvent(js.Event.new('resize'))
 
 
 def svg_to_data_url(svg_np):
