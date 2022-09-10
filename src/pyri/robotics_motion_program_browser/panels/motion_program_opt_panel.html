@@ -6,6 +6,7 @@
         <b-form-radio value="redundancy_resolution">Redundancy Resolution</b-form-radio>
         <b-form-radio value="motion_program_generation">Motion Program Generation</b-form-radio>
         <b-form-radio value="motion_program_optimization">Motion Program Optimization</b-form-radio>
+        <b-form-radio value="motion_program_execution">Motion Program Execution</b-form-radio>
     </b-form-radio-group>
 </b-card>
 
@@ -17,6 +18,9 @@
 </div>
 <div v-show="op_selected === 'motion_program_optimization'">
     <h2>Motion Program Optimization</h2>
+</div>
+<div v-show="op_selected === 'motion_program_execution'">
+    <motion-program-opt-panel-motion-program-exec-component/>
 </div>
 </div>
 </div>

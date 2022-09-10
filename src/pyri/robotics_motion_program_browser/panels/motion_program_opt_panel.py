@@ -331,13 +331,104 @@ class MotionProgramGenerationComponent(MotionOptPanelPage):
 
         await self._do_alg_base("motion_program_generation", input_parameters)
 
+@VueComponent
+class MotionProgramExecComponent(PyriVue):
+    
+    vue_template = importlib_resources.read_text(__package__,"motion_program_opt_panel_motion_program_execution_component.html")
+
+    vue_components = {
+                    "motion-program-opt-panel-log-component": LogComponent,
+                    "motion-program-opt-panel-execution-component": ExecutionComponent
+    }
+
+    execution_state = vue_data("idle")
+
+    plots = vue_data([])
+
+    motion_program_global_name = vue_data("")
+    nominal_curve_global_name = vue_data("")
+    joint_log_global_name = vue_data("")
+    plots_global_name = vue_data("")
+    robot_mp_local_device_name = vue_data("robot_mp")
+
+    def __init__(self):
+        super().__init__()
+        self.mp_exec_gen = None
+
+    @vue_method
+    def run(self):
+        
+        self.execution_state = "running"
+        self.core.create_task(self.exec_motion_program())
+    
+    @vue_method
+    async def abort(self):
+        self.execution_state = "done"
+        if self.mp_exec_gen is not None:            
+            await self.mp_exec_gen.AsyncAbort(None)            
+
+    @vue_method
+    def reset(self):
+        self.execution_state = "idle"
+        self.log.clear_log()
+        self.plots = to_js2([])
+
+    @property
+    def log(self):
+        return self.get_ref_pyobj("motion_program_exec_log")
+
+
+    async def exec_motion_program(self):
+        try:
+            
+            robot_name = self.robot_mp_local_device_name
+            mp_name = self.motion_program_global_name
+
+            input_parameters = {
+                "joint_log_global_name": RR.VarValue(self.joint_log_global_name, "string"),
+                "nominal_curve_global_name": RR.VarValue(self.nominal_curve_global_name, "string"),
+                "plots_global_name": RR.VarValue(self.plots_global_name, "string"),                            
+            }
+
+            mp_opt_service = self.core.device_manager.get_device_subscription("robotics_mp_opt").GetDefaultClient()
+            self.mp_exec_gen = await mp_opt_service.async_motion_program_exec(robot_name, mp_name, input_parameters, None)
+           
+            while True:
+                try:
+                    res = await self.mp_exec_gen.AsyncNext(None,None)
+                    if res.log_output:
+                        self.log.append_log_lines(res.log_output)
+                    
+                    if res.plots:
+                        try:
+                            for plot_name,plot in res.plots.items():
+                                self.plots.push(to_js2({
+                                    "plot_name": plot_name,
+                                    "plot_data_url": svg_to_data_url(plot)
+                                }))
+
+                        except:
+                            js.alert(f"Error generating plots:\n\n{traceback.format_exc()}")
+
+                except RR.StopIterationException:
+                    break
+        
+        except:
+            js.alert(f"Motion program execution failed:\n\n{traceback.format_exc()}")
+        finally:
+            self.execution_state = "done"
+            self.mp_opt_gen = None
+
+    
+
 class MotionOptPanel(PyriVue):
     def __init__(self, core, el):
         super().__init__(core, el)
         
     vue_components={
         "motion-program-opt-panel-redundancy-resolution-component": RedundancyResolutionComponent,
-        "motion-program-opt-panel-motion-program-generation-component": MotionProgramGenerationComponent
+        "motion-program-opt-panel-motion-program-generation-component": MotionProgramGenerationComponent,
+        "motion-program-opt-panel-motion-program-exec-component": MotionProgramExecComponent
     }
 
     op_selected = vue_data("redundancy_resolution")
