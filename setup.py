@@ -12,7 +12,7 @@ setup(
     include_package_data=True,
     package_data = {
         'pyri.robotics_motion_program_browser.panels': ['*.html'],
-        'pyri.robotics_motion_program_browser.dialogs': ['*.html']
+        'pyri.robotics_motion_program_browser.components': ['*.html']
     },
     zip_safe=False,
     install_requires=[
@@ -21,6 +21,7 @@ setup(
     ],
     entry_points = {
         'pyri.plugins.webui_browser_panel': ['pyri-robotics-motion-program-browser=pyri.robotics_motion_program_browser.panels.robotics_mp_panels:get_webui_browser_panel_factory'],
-        'pyri.plugins.webui_browser_variable_dialog': ['pyri-robotics-motion-program-browser=pyri.robotics_motion_program_browser.dialogs.robotics_mp_variable_dialogs:get_webui_browser_variable_dialog_factory']
+        'pyri.plugins.webui_browser_component': ['pyri-robotics-motion-program-browser=pyri.robotics_motion_program_browser.components.robotics_mp_components:get_webui_browser_component_factory'],
+        'pyri.plugins.webui_browser_plugin_init': ['pyri-robotics-motion-program-browser=pyri.robotics_motion_program_browser.robotics_mp_plugin_init:get_webui_browser_plugin_init_factory'],
     }
 )

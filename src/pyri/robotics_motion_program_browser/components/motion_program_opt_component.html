@@ -11,16 +11,16 @@
 </b-card>
 
 <div v-show="op_selected === 'redundancy_resolution'">
-    <motion-program-opt-panel-redundancy-resolution-component/>
+    <pyri-motion-program-opt-redundancy-resolution/>
 </div>
 <div v-show="op_selected === 'motion_program_generation'">
-    <motion-program-opt-panel-motion-program-generation-component/>
+    <pyri-motion-program-opt-motion-program-generation/>
 </div>
 <div v-show="op_selected === 'motion_program_optimization'">
     <h2>Motion Program Optimization</h2>
 </div>
 <div v-show="op_selected === 'motion_program_execution'">
-    <motion-program-opt-panel-motion-program-exec-component/>
+    <pyri-motion-program-opt-motion-program-execution/>
 </div>
 </div>
 </div>

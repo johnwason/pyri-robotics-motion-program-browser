@@ -26,12 +26,12 @@ class="mt-2">
 </b-form-group>
 </b-card>
 <h3>Execution</h3>
-<motion-program-opt-panel-execution-component
+<pyri-motion-program-opt-execution
 @run="run()" @abort="abort()" @reset="reset()" :state="execution_state"/>
 
 <h3>Log</h3>
 <div style="height:400px">
-<motion-program-opt-panel-log-component ref="motion_program_exec_log"/>
+<pyri-terminal-output ref="motion_program_exec_log"/>
 </div>
  
 <div v-if="plots.length">

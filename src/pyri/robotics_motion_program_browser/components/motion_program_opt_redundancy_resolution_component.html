@@ -1,7 +1,7 @@
 <div>
 <h2>Redundancy Resolution</h2>
 <h3>Input Data</h3>
-<motion-program-opt-panel-input-data-component ref="redundancy_resolution_curve_file"
+<pyri-motion-program-opt-input-data ref="redundancy_resolution_curve_file"
     name="redundancy_resolution_curve_file" 
     title="Curve File" subtitle="Curve data table in x,y,z,i,j,k format"/>
 
@@ -27,12 +27,12 @@ class="mt-2">
 </b-form-group>
 </b-card>
 <h3>Execution</h3>
-<motion-program-opt-panel-execution-component
+<pyri-motion-program-opt-execution
 @run="run()" @abort="abort()" @reset="reset()" :state="execution_state"/>
 
 <h3>Log</h3>
 <div style="height:400px">
-<motion-program-opt-panel-log-component ref="redundancy_resolution_log"/>
+<pyri-terminal-output ref="redundancy_resolution_log"/>
 </div>
 
 <div v-if="plots.length">
