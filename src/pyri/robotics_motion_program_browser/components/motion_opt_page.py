@@ -9,6 +9,12 @@ import traceback
 import numpy as np
 import io
 from pyri.webui_browser.pyri_vue import PyriVue, VueComponent, vue_method, vue_data, vue_prop, vue_register_component
+import base64
+
+def svg_to_data_url(svg_np):
+    svg_b64 = base64.b64encode(bytearray(svg_np)).decode("ascii")
+
+    return f"data:image/svg+xml;base64,{svg_b64}"
 
 class MotionOptPage(PyriVue):
     
@@ -36,7 +42,7 @@ class MotionOptPage(PyriVue):
     @vue_method
     def reset(self):
         self.execution_state = "idle"
-        self.log.clear_log()
+        self.log.clear_output()
         self.plots = to_js2([])
 
     @property
@@ -72,7 +78,7 @@ class MotionOptPage(PyriVue):
                 except RR.StopIterationException:
                     break
         
-            self.log.append_log_line("Done!")
+            self.log.append_output_line("Done!")
                 
         except:
             js.alert(f"Motion program optimization failed:\n\n{traceback.format_exc()}")

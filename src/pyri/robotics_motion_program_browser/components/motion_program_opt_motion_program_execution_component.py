@@ -50,7 +50,7 @@ class MotionProgramExecComponent(PyriVue):
     @vue_method
     def reset(self):
         self.execution_state = "idle"
-        self.log.clear_log()
+        self.log.clear_output()
         self.plots = to_js2([])
 
     @property
