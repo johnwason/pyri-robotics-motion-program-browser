@@ -42,10 +42,9 @@ class MotionProgramGenerationComponent(MotionOptPage):
                 
         except:
             js.alert(f"Motion program parameter error:\n\n{traceback.format_exc()}")
-            return
-        finally:
             self.execution_state = "done"
             self.mp_opt_gen = None
+            return
 
         await self._do_alg_base("motion_program_generation", input_parameters)
 
