@@ -16,6 +16,9 @@ class RedundancyResolutionComponent(MotionOptPage):
     
     vue_template = importlib_resources.read_text(__package__,"motion_program_opt_redundancy_resolution_component.html")
 
+    robot_local_device_name = vue_data("robot")
+    tool_local_device_name = vue_data("tool")
+    tool_surface_offset = vue_data("")
     curve_global_name = vue_data("")
     curve_js_global_name = vue_data("")
     curve_base_global_name = vue_data("")
@@ -29,8 +32,13 @@ class RedundancyResolutionComponent(MotionOptPage):
         try:
 
             curve = self.get_ref_pyobj("redundancy_resolution_curve_file").get_sheet_data()
+            acc_data = await self.get_ref_pyobj("redundancy_resolution_acc_data").read_acc_file()
             input_parameters = {
                 "curve": RR.VarValue(curve, "double[*]"),
+                "robot_local_device_name": RR.VarValue(self.robot_local_device_name, "string"),
+                "robot_acc_data": RR.VarValue(np.array(acc_data, dtype=np.uint8),"uint8"),
+                "tool_local_device_name": RR.VarValue(self.tool_local_device_name, "string"),
+                "tool_surface_offset": RR.VarValue(float(self.tool_surface_offset), "double"),
                 "curve_global_name": RR.VarValue(self.curve_global_name, "string"),
                 "curve_js_global_name": RR.VarValue(self.curve_js_global_name, "string"),
                 "curve_base_global_name": RR.VarValue(self.curve_base_global_name, "string"),

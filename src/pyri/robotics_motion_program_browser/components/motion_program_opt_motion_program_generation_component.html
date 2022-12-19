@@ -7,11 +7,21 @@
 
 
 <h3>Input Parameters</h3>
-<b-card title="Input Parameters" sub-title="Motion program generation input parameters" border-variant="dark" 
-style="padding: 0.25rem;"
-class="mt-2">
-<b-form-group label="Total Path Segments (N)" label-cols-md="3">
-    <b-form-input v-model="total_seg" id ="mp_opt_motion_program_gen_total_seg"></b-form-input>
+<b-card title="Input Parameters" sub-title="Motion program greedy algorithm program generation input parameters" 
+border-variant="dark" style="padding: 0.25rem;" class="mt-2">
+<b-form-group label="Robot Local Device Name" label-cols-md="3">
+    <b-form-input v-model="robot_local_device_name" id ="mp_opt_motion_program_gen_robot"></b-form-input>
+</b-form-group>
+<pyri-motion-program-opt-acc-data-input label="Robot Acceleration Data File" 
+    ref="motion_program_gen_acc_data" name="motion_program_gen_robot_acc_data"/>
+<b-form-group label="Tool Local Device Name" label-cols-md="3">
+    <b-form-input v-model="tool_local_device_name" id ="mp_opt_motion_program_gen_tool"></b-form-input>
+</b-form-group>
+<b-form-group label="Tool Surface Offset (m)" label-cols-md="3">
+    <b-form-input v-model="tool_surface_offset" id ="mp_opt_motion_program_gen_tool_offset"></b-form-input>
+</b-form-group>
+<b-form-group label="Greedy Threshold (mm)" label-cols-md="3">
+    <b-form-input v-model="greedy_threshold" id ="mp_opt_motion_program_gen_greedy_threshold"></b-form-input>
 </b-form-group>
 <b-form-group label="Path Velocity (m/s)" label-cols-md="3">
     <b-form-input v-model="velocity" id ="mp_opt_motion_program_gen_velocity"></b-form-input>

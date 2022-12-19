@@ -29,7 +29,8 @@ class MotionProgramExecComponent(PyriVue):
     nominal_curve_global_name = vue_data("")
     joint_log_global_name = vue_data("")
     plots_global_name = vue_data("")
-    robot_mp_local_device_name = vue_data("robot_mp")
+    robot_mp_local_device_name = vue_data("robot")
+    tool_mp_local_device_name = vue_data("tool")
 
     def __init__(self):
         super().__init__()
@@ -62,6 +63,7 @@ class MotionProgramExecComponent(PyriVue):
         try:
             
             robot_name = self.robot_mp_local_device_name
+            tool_name = self.tool_mp_local_device_name
             mp_name = self.motion_program_global_name
 
             input_parameters = {
@@ -71,7 +73,7 @@ class MotionProgramExecComponent(PyriVue):
             }
 
             mp_opt_service = self.core.device_manager.get_device_subscription("robotics_mp_opt").GetDefaultClient()
-            self.mp_exec_gen = await mp_opt_service.async_motion_program_exec(robot_name, mp_name, input_parameters, None)
+            self.mp_exec_gen = await mp_opt_service.async_motion_program_exec(robot_name, tool_name, mp_name, input_parameters, None)
            
             while True:
                 try:

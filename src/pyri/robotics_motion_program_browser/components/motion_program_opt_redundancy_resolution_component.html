@@ -7,6 +7,21 @@
 
 
 <h3>Input Parameters</h3>
+<b-card title="Input Parameters" sub-title="Motion program generation input parameters" border-variant="dark" 
+style="padding: 0.25rem;"
+class="mt-2">
+<b-form-group label="Robot Local Device Name" label-cols-md="3">
+    <b-form-input v-model="robot_local_device_name" id ="mp_opt_redundancy_resolution_robot"></b-form-input>
+</b-form-group>
+<pyri-motion-program-opt-acc-data-input label="Robot Acceleration Data File" 
+    ref="redundancy_resolution_acc_data" name="redundancy_resolution_robot_acc_data"/>
+<b-form-group label="Tool Local Device Name" label-cols-md="3">
+    <b-form-input v-model="tool_local_device_name" id ="mp_opt_redundancy_resolution_tool"></b-form-input>
+</b-form-group>
+<b-form-group label="Tool Surface Offset (m)" label-cols-md="3">
+    <b-form-input v-model="tool_surface_offset" id ="mp_opt_redundancy_resolution_tool_offset"></b-form-input>
+</b-form-group>
+</b-card>
 <b-card title="Output Variables" sub-title="Output global variable names to store results" border-variant="dark" 
 style="padding: 0.25rem;"
 class="mt-2">
