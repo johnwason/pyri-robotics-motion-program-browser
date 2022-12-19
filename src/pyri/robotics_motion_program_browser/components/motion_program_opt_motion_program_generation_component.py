@@ -17,7 +17,7 @@ class MotionProgramGenerationComponent(MotionOptPage):
     vue_template = importlib_resources.read_text(__package__,"motion_program_opt_motion_program_generation_component.html")
 
     greedy_threshold = vue_data(0.1)
-    velocity = vue_data(1)
+    velocity = vue_data(0.1)
     blend_radius = vue_data(0.05)
     motion_program_global_name = vue_data("")
     motion_program_parameters_global_name = vue_data("")

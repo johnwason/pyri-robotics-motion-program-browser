@@ -5,7 +5,7 @@
     <b-form-radio-group id="mp-opt-operation" v-model="op_selected" name="mop-opt-selected-radio" buttons button-variant="dark">
         <b-form-radio value="redundancy_resolution">Redundancy Resolution</b-form-radio>
         <b-form-radio value="motion_program_generation">Motion Program Generation</b-form-radio>
-        <b-form-radio value="motion_program_optimization">Motion Program Optimization</b-form-radio>
+        <b-form-radio value="motion_program_update">Motion Program Update</b-form-radio>
         <b-form-radio value="motion_program_execution">Motion Program Execution</b-form-radio>
     </b-form-radio-group>
 </b-card>
@@ -16,8 +16,8 @@
 <div v-show="op_selected === 'motion_program_generation'">
     <pyri-motion-program-opt-motion-program-generation/>
 </div>
-<div v-show="op_selected === 'motion_program_optimization'">
-    <h2>Motion Program Optimization</h2>
+<div v-show="op_selected === 'motion_program_update'">
+    <pyri-motion-program-opt-motion-program-update/>
 </div>
 <div v-show="op_selected === 'motion_program_execution'">
     <pyri-motion-program-opt-motion-program-execution/>

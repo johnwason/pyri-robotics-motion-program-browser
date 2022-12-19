@@ -5,6 +5,7 @@ from .motion_program_opt_execution_component import register_vue_components as e
 from .motion_program_opt_redundancy_resolution_component import register_vue_components as redun_data_register_vue_components
 from .motion_program_opt_motion_program_execution_component import register_vue_components as mp_exec_register_vue_components
 from .motion_program_opt_motion_program_generation_component import register_vue_components as mp_gen_register_vue_components
+from .motion_program_opt_motion_program_update_component import register_vue_components as mp_update_register_vue_components
 from .motion_program_opt_component import register_vue_components as mp_opt_register_vue_components
 
 
@@ -19,7 +20,8 @@ class PyriRoboticsMPComponentsWebUIBrowserComponentPluginFactory(PyriWebUIBrowse
         redun_data_register_vue_components()
         mp_exec_register_vue_components()
         mp_gen_register_vue_components()
-        mp_opt_register_vue_components()       
+        mp_update_register_vue_components()
+        mp_opt_register_vue_components()
 
 def get_webui_browser_component_factory():
     return PyriRoboticsMPComponentsWebUIBrowserComponentPluginFactory()
