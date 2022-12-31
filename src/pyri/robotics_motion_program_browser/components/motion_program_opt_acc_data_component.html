@@ -1,0 +1,7 @@
+<b-form-group :label="label" label-cols-md="3">
+    <b-form-file :id="'mp_opt_' + name"
+    v-model="acc_file" :state="Boolean(data_file)"
+    placeholder="Choose acceleration file or drop it here..."
+    drop-placeholder="Drop file here..."
+    accept=".pickle"></b-form-file>
+</b-form-group>

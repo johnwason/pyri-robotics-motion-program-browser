@@ -1,0 +1,61 @@
+<div>
+<h2>Redundancy Resolution</h2>
+<h3>Input Data</h3>
+<pyri-motion-program-opt-input-data ref="redundancy_resolution_curve_file"
+    name="redundancy_resolution_curve_file" 
+    title="Curve File" subtitle="Curve data table in x,y,z,i,j,k format"/>
+
+
+<h3>Input Parameters</h3>
+<b-card title="Input Parameters" sub-title="Motion program generation input parameters" border-variant="dark" 
+style="padding: 0.25rem;"
+class="mt-2">
+<b-form-group label="Robot Local Device Name" label-cols-md="3">
+    <b-form-input v-model="robot_local_device_name" id ="mp_opt_redundancy_resolution_robot"></b-form-input>
+</b-form-group>
+<pyri-motion-program-opt-acc-data-input label="Robot Acceleration Data File" 
+    ref="redundancy_resolution_acc_data" name="redundancy_resolution_robot_acc_data"/>
+<b-form-group label="Tool Local Device Name" label-cols-md="3">
+    <b-form-input v-model="tool_local_device_name" id ="mp_opt_redundancy_resolution_tool"></b-form-input>
+</b-form-group>
+<b-form-group label="Tool Surface Offset (m)" label-cols-md="3">
+    <b-form-input v-model="tool_surface_offset" id ="mp_opt_redundancy_resolution_tool_offset"></b-form-input>
+</b-form-group>
+</b-card>
+<b-card title="Output Variables" sub-title="Output global variable names to store results" border-variant="dark" 
+style="padding: 0.25rem;"
+class="mt-2">
+<b-form-group label="Curve Input Save" label-cols-md="3">
+    <b-form-input v-model="curve_global_name" id ="mp_opt_redundancy_resolution_curve_global_name"></b-form-input>
+</b-form-group>
+<b-form-group label="Curve JS Result" label-cols-md="3">
+    <b-form-input v-model="curve_js_global_name" id ="mp_opt_redundancy_resolution_curve_js_global_name"></b-form-input>
+</b-form-group>
+<b-form-group label="Curve Base Result" label-cols-md="3">
+    <b-form-input v-model="curve_base_global_name" id ="mp_opt_redundancy_resolution_curve_base_global_name"></b-form-input>
+</b-form-group>
+<b-form-group label="Curve Pose Result" label-cols-md="3">
+    <b-form-input v-model="curve_pose_global_name" id ="mp_opt_redundancy_resolution_curve_pose_global_name"></b-form-input>
+</b-form-group>
+<b-form-group label="Curve Plots Save" label-cols-md="3">
+    <b-form-input v-model="plots_global_name" id ="mp_opt_redundancy_resolution_plots_global_name"></b-form-input>
+</b-form-group>
+</b-card>
+<h3>Execution</h3>
+<pyri-motion-program-opt-execution
+@run="run()" @abort="abort()" @reset="reset()" :state="execution_state"/>
+
+<h3>Log</h3>
+<div style="height:400px">
+<pyri-terminal-output ref="redundancy_resolution_log"/>
+</div>
+
+<div v-if="plots.length">
+<h3>Results Plots</h3>
+<div v-for="plot in plots" v-bind:key="plot.plot_name">
+    <h4 class="text-center">{{ plot.plot_name }}</h4>
+    <img :src="plot.plot_data_url"/>
+</div>
+</div>
+
+</div>
