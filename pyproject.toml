@@ -1,0 +1,43 @@
+[project]
+
+name = "pyri-robotics-motion-program-browser"
+version = "0.1.0"
+description = "PyRI Teach Pendant WebUI Browser Robotics Motion Program"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE.txt"}
+keywords = ["pyodide", "pyri-project", "pyri-webui", "pyri-webui-browser-package", "robotics"]
+authors = [
+    {name = "John Wason", email = "wason@wasontech.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Topic :: Scientific/Engineering"
+]
+
+dependencies = [
+    'pyri-common',        
+    'importlib-resources',        
+]
+
+[project.urls]
+homepage="http://pyri.tech"
+repository="https://github.com/pyri-project/pyri-robotics-motion-program-browser"
+
+[project.entry-points."pyri.plugins.webui_browser_panel"]
+pyri-robotics-motion-program-browser = "pyri.robotics_motion_program_browser.panels.robotics_mp_panels:get_webui_browser_panel_factory"
+
+[project.entry-points."pyri.plugins.webui_browser_component"]
+pyri-robotics-motion-program-browser = "pyri.robotics_motion_program_browser.components.robotics_mp_components:get_webui_browser_component_factory"
+
+[project.entry-points."pyri.plugins.webui_browser_plugin_init"]
+pyri-robotics-motion-program-browser = "pyri.robotics_motion_program_browser.robotics_mp_plugin_init:get_webui_browser_plugin_init_factory"
+
+
+[build-system]
+build-backend = 'setuptools.build_meta'
+requires = [
+    'setuptools',
+    'toml',
+]
