@@ -9,7 +9,7 @@ import traceback
 import numpy as np
 import io
 from pyri.webui_browser.pyri_vue import PyriVue, VueComponent, vue_method, vue_data, vue_prop, vue_register_component
-from pyodide import create_proxy
+from pyodide.ffi import create_proxy
 
 @VueComponent
 class InputDataComponent(PyriVue):
